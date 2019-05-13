@@ -11,9 +11,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import datetime
 
-# cred = credentials.Certificate("./ServiceAccountKey.json")
-# firebase_app = firebase_admin.initialize_app(cred)
-# db = firestore.client()
+cred = credentials.Certificate("./ServiceAccountKey.json")
+firebase_app = firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 application = app = Flask(__name__)
 api = Api(app, version='1.0', title='Pneumonia Classification', description='Tony Cioara')
@@ -45,16 +45,17 @@ class CNNPrediction(Resource):
       out = model.predict(x)
     print("Out:", out[0][0])
     pred = str(round(out[0][0] * 100))
+    savePredictionToDB(pred)
     return {'Likelyhood of Pneumonia:': pred + " percent"}
 
-# def savePredictionToDB(pred):
-#   time = datetime.datetime.now()
-#   title = "pred " + time.strftime("%I:%M%p on %B %d, %Y")
-#   doc_ref = db.collection(u'userlogs').document(title)
-#   doc_ref.set({
-#     u'prediction': pred,
-#     u'time': time,
-#   })
+def savePredictionToDB(pred):
+  time = datetime.datetime.now()
+  title = "pred " + time.strftime("%I:%M%p on %B %d, %Y")
+  doc_ref = db.collection(u'userlogs').document(title)
+  doc_ref.set({
+    u'prediction': pred,
+    u'time': time,
+  })
 
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8000)
